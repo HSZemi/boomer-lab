@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Boomer Lab</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="../css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <div class="content">
+        <div class="jumbotron">
+            <h1 class="display-4">Boomer Lab Admin</h1>
+            <p class="lead">This website provides recorded games from Hidden Cup 3. It also permits players to upload
+                their recorded games from Hidden Cup 3.</p>
+            <hr class="my-4">
+            <h3>Create match</h3>
+            <div class="row">
+                <div class="col-2">
+                    <div class="form-group">
+                        <label for="select-best-of">Round</label>
+                        <select class="form-control" id="select-round">
+                            <option value="ro32">Round of 32</option>
+                            <option value="ro16" selected>Round of 16</option>
+                            <option value="qf">Quarterfinal</option>
+                            <option value="sf">Semifinal</option>
+                            <option value="f">Final</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="form-group">
+                        <label for="select-best-of">Number of games</label>
+                        <select class="form-control" id="select-best-of">
+                            <option value="1">Best of 1</option>
+                            <option value="3" selected>Best of 3</option>
+                            <option value="5">Best of 5</option>
+                            <option value="7">Best of 7</option>
+                            <option value="9">Best of 9</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="form-group">
+                        <label for="input-player-1">Player 1</label>
+                        <input class="form-control" id="input-player-1"/>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="form-group">
+                        <label for="input-player-2">Player 2</label>
+                        <input class="form-control" id="input-player-2"/>
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="form-group">
+                        <label for="btn-create-match">&nbsp;</label>
+                        <button class="btn btn-secondary form-control" id="btn-create-match">Create</button>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Match list</h3>
+
+            <p>
+                <button class="btn btn-secondary" onclick="reloadMatches()">Reload</button>
+            </p>
+
+            <table class="table table-hover table-sm">
+                <thead>
+                <tr>
+                    <th>Round</th>
+                    <th># games</th>
+                    <th>Player 1</th>
+                    <th>P1 code</th>
+                    <th>P1 files</th>
+                    <th>Player 2</th>
+                    <th>P2 code</th>
+                    <th>P2 files</th>
+                    <th>status</th>
+                    <th>visible</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody id="match-list-body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    const customHeaders = new Headers();
+    customHeaders.append('pragma', 'no-cache');
+    customHeaders.append('cache-control', 'no-cache');
+    const options = {headers: customHeaders};
+
+    document.getElementById('btn-create-match').onclick = () => {
+        const round = document.getElementById('select-round').value;
+        const number_of_games = parseInt(document.getElementById('select-best-of').value);
+        const player1 = document.getElementById('input-player-1').value;
+        const player2 = document.getElementById('input-player-2').value;
+        fetch('api.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({"creatematch": {round, number_of_games, player1, player2}}),
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                console.log('Success:', data);
+                document.getElementById('input-player-1').value = '';
+                document.getElementById('input-player-2').value = '';
+                reloadMatches();
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    };
+
+    function reloadMatches() {
+        return fetch('data/matches.json', options)
+            .then((response) => response.json())
+            .then((data) => {
+                const matchListBody = document.getElementById('match-list-body');
+                matchListBody.innerHTML = '';
+                for (let match of data) {
+                    const locked = match.locked ? 'locked 🔒' : 'unlocked 🔓';
+                    const player1files = match.player1recs.length > 0 ? `<a href="../data/${match.player1zip}">${match.player1recs.length} files ✔️</a>` : 'missing ❌';
+                    const player2files = match.player2recs.length > 0 ? `<a href="../data/${match.player2zip}">${match.player2recs.length} files ✔</a>️` : 'missing ❌';
+                    matchListBody.innerHTML += `<tr>
+													<td>${match.round}</td>
+													<td>${match.number_of_games}</td>
+													<td>${match.player1name}</td>
+													<td><span id="test" class="badge badge-secondary code">${match.player1code}</span></td>
+													<td>${player1files}</td>
+													<td>${match.player2name}</td>
+													<td><span class="badge badge-secondary code">${match.player2code}</span></td>
+													<td>${player2files}</td>
+													<td>${locked}</td>
+													<td>${match.visible}</td>
+													<td>
+														<button class="btn btn-sm btn-secondary btn-lock">Lock</button>
+														<button class="btn btn-sm btn-primary btn-publish">Publish</button>
+													</td>
+												</tr>`;
+                }
+                for (let btn of document.getElementsByClassName('btn-lock')) {
+                    btn.onclick = (event) => {
+                        const player1code = event.target.parentElement.parentElement.children[3].children[0].textContent;
+                        const player2code = event.target.parentElement.parentElement.children[6].children[0].textContent;
+                        lockUpload(player1code, player2code);
+                    };
+                }
+                for (let btn of document.getElementsByClassName('btn-publish')) {
+                    btn.onclick = (event) => {
+                        const player1code = event.target.parentElement.parentElement.children[3].children[0].textContent;
+                        const player2code = event.target.parentElement.parentElement.children[6].children[0].textContent;
+                        publish(player1code, player2code);
+                    };
+                }
+            });
+    }
+
+    function publish(player1code, player2code) {
+        fetch('api.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({"publish": {player1code, player2code}}),
+        })
+            .then(() => {
+                reloadMatches();
+            });
+    }
+
+    function lockUpload(player1code, player2code) {
+        fetch('api.php?lock', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({"lock": {player1code, player2code}}),
+        })
+            .then(() => {
+                reloadMatches();
+            });
+    }
+
+    reloadMatches();
+</script>
+</body>
+</html>

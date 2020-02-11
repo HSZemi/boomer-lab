@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>Boomer Lab</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <div class="content">
+        <div class="jumbotron">
+            <h1 class="display-4"><a href="./">Boomer Lab</a> Games</h1>
+            <p class="lead">This website provides recorded games from Hidden Cup 3. It also permits players to upload
+                their recorded games from Hidden Cup 3.</p>
+            <p class="font-weight-bold">Click on a player name to download the zip file of
+                <abbr title="The file size has been padded to 5 MiB so it does not reveal the game length">spoiler
+                    free</abbr> recorded game files from that player's perspective!</p>
+            <hr class="my-4">
+            <ul id="matches"></ul>
+        </div>
+    </div>
+</div>
+<script>
+    function round(input) {
+        switch (input) {
+            case 'ro32':
+                return 'Round of 32';
+            case 'ro16':
+                return 'Round of 16';
+            case 'qf':
+                return 'Quarterfinal';
+            case 'sf':
+                return 'Semifinal';
+            case 'f':
+                return 'Final';
+        }
+        return input;
+    }
+
+    function round2value(input) {
+        switch (input) {
+            case 'ro32':
+                return 1;
+            case 'ro16':
+                return 2;
+            case 'qf':
+                return 3;
+            case 'sf':
+                return 4;
+            case 'f':
+                return 5;
+        }
+        return 0;
+    }
+
+    function sort(matches) {
+        return matches.sort((a, b) => {
+            return (round2value(a.round) > round2value(b.round)) ? -1 : 1;
+        });
+    }
+
+    fetch('api.php?matches')
+        .then((response) => {
+            return response.json();
+        })
+        .then((myJson) => {
+            const matches = document.getElementById('matches');
+            const sortedMatches = sort(myJson);
+            for (let match of sortedMatches) {
+                matches.innerHTML += `<li>
+                                        ${round(match.round)}:
+                                        <a href="./data/${match.player1zip}">
+                                            <span class="badge badge-primary">${match.player1name}</span></a>
+                                        vs
+                                        <a href="./data/${match.player2zip}">
+                                            <span class="badge badge-danger">${match.player2name}</span></a>
+                                        (${match.number_of_games} games)
+                                      </li>`
+            }
+        });
+</script>
+</body>
+</html>

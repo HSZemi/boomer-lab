@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>Boomer Lab</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	<style>
+		.hidden {
+			display: none;
+		}
+		#player-name,
+		#opponent-name,
+		#round-name {
+			font-weight: bold;
+		}
+	</style>
+</head>
+<body>
+<div class="container">
+	<div class="content">
+		<div class="jumbotron">
+			<h1 class="display-4"><a href="./">Boomer Lab</a> Upload</h1>
+			<p class="lead">This website provides recorded games from Hidden Cup 3. It also permits players to upload
+				their recorded games from Hidden Cup 3.</p>
+
+			<div id="code-check">
+				<hr class="my-4">
+
+				<p>Enter your match code:</p>
+
+				<div class="input-group input-group-lg">
+					<input name="match-code" type="text" id="input-match-code"/>
+					<div class="input-group-append">
+						<button class="btn btn-outline-secondary" type="button" id="check-code-btn">Check code</button>
+					</div>
+				</div>
+			</div>
+
+			<div id="upload-form" class="hidden">
+				<hr class="my-4">
+
+				<p>Hello <span id="player-name">…</span>!</p>
+				<p>Please upload the recorded games of your <span id="round-name">…</span> match against <span id="opponent-name">…</span>.</p>
+
+				<input id="files-input" type="file" multiple/>
+
+				<ul id="game-sorter"></ul>
+
+				<button id="btn-upload" class="btn btn-primary" onclick="performUpload()">Upload</button>
+
+			</div>
+
+			<div id="upload-success" class="hidden">
+				<hr class="my-4">
+
+				<div class="alert alert-success" role="alert">
+					<b>Upload successful!</b> Thank you.
+				</div>
+			</div>
+
+		</div>
+	</div>
+</div>
+<script src="js/upload.js"></script>
+</body>
+</html>
