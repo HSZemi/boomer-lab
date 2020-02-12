@@ -14,12 +14,12 @@
 			<p class="lead">This website provides recorded games from Hidden Cup 3. It also permits players to upload
 				their recorded games from Hidden Cup 3.</p>
 			<hr class="my-4">
-			<li id="matches"></li>
+			<ul id="matches"></ul>
 		</div>
 	</div>
 </div>
 <script>
-    fetch('data/matches.json')
+    fetch('api.php?matches')
         .then((response) => {
             return response.json();
         })

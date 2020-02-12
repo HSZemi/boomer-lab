@@ -18,6 +18,18 @@
 			<div class="row">
 				<div class="col-2">
 					<div class="form-group">
+						<label for="select-best-of">Round</label>
+						<select class="form-control" id="select-round">
+							<option value="ro32">Round of 32</option>
+							<option value="ro16" selected>Round of 16</option>
+							<option value="qf">Quarterfinal</option>
+							<option value="sf">Semifinal</option>
+							<option value="f">Final</option>
+						</select>
+					</div>
+				</div>
+				<div class="col-2">
+					<div class="form-group">
 						<label for="select-best-of">Number of games</label>
 						<select class="form-control" id="select-best-of">
 							<option value="1">Best of 1</option>
@@ -28,13 +40,13 @@
 						</select>
 					</div>
 				</div>
-				<div class="col-4">
+				<div class="col-3">
 					<div class="form-group">
 						<label for="input-player-1">Player 1</label>
 						<input class="form-control" id="input-player-1"/>
 					</div>
 				</div>
-				<div class="col-4">
+				<div class="col-3">
 					<div class="form-group">
 						<label for="input-player-2">Player 2</label>
 						<input class="form-control" id="input-player-2"/>
@@ -49,8 +61,116 @@
 			</div>
 
 			<h3>Match list</h3>
+
+			<p>
+				<button class="btn btn-secondary" onclick="reloadMatches()">Reload</button>
+				<button class="btn btn-warning" onclick="checkRecStatus()">Check rec status</button>
+			</p>
+
+			<table class="table table-hover table-sm">
+				<thead>
+				<tr>
+					<th>Round</th>
+					<th># games</th>
+					<th>Player 1</th>
+					<th>P1 code</th>
+					<th>P1 status</th>
+					<th>Player 2</th>
+					<th>P2 code</th>
+					<th>P2 status</th>
+					<th>visible</th>
+					<th>Actions</th>
+				</tr>
+				</thead>
+				<tbody id="match-list-body"></tbody>
+			</table>
 		</div>
 	</div>
 </div>
+<script>
+	const customHeaders = new Headers();
+	customHeaders.append('pragma', 'no-cache');
+	customHeaders.append('cache-control', 'no-cache');
+	const options = {headers: customHeaders};
+
+	document.getElementById('btn-create-match').onclick = () => {
+		const round = document.getElementById('select-round').value;
+		const number_of_games = document.getElementById('select-best-of').value;
+		const player1 = document.getElementById('input-player-1').value;
+		const player2 = document.getElementById('input-player-2').value;
+		fetch('api.php', {
+			method: 'POST', // or 'PUT'
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({"creatematch": {round, number_of_games, player1, player2}}),
+		})
+				.then((response) => response.json())
+				.then((data) => {
+					console.log('Success:', data);
+				})
+				.catch((error) => {
+					console.error('Error:', error);
+				});
+	};
+
+	function reloadMatches() {
+		return fetch('data/matches.json', options)
+				.then((response) => response.json())
+				.then((data) => {
+					const matchListBody = document.getElementById('match-list-body');
+					matchListBody.innerHTML = '';
+					for (let match of data) {
+						matchListBody.innerHTML += `<tr>
+													<td>${match.round}</td>
+													<td>${match.number_of_games}</td>
+													<td>${match.player1}</td>
+													<td><span class="badge badge-secondary code">${match.player1code}</span></td>
+													<td id="status-${match.player1code}"></td>
+													<td>${match.player2}</td>
+													<td><span class="badge badge-secondary code">${match.player2code}</span></td>
+													<td id="status-${match.player2code}"></td>
+													<td>${match.visible}</td>
+													<td>
+														<button class="btn btn-sm btn-secondary" onclick="lockUpload()">Lock</button>
+														<button class="btn btn-sm btn-primary" onclick="publish()">Publish</button>
+													</td>
+												</tr>`;
+					}
+				});
+	}
+
+	function checkRecStatus() {
+		reloadMatches().then(() => {
+			const codes = document.getElementsByClassName('code');
+			for (let code of codes) {
+				fetch(`data/${code.innerHTML}.json`, options)
+						.then((response) => response.json())
+						.then((data) => {
+							let status = document.getElementById('status-' + data.id);
+							if (data.files.length < 1) {
+								status.innerHTML += '<span class="badge badge-warning">✖</span>';
+							} else {
+								status.innerHTML += `<span class="badge badge-success">✓ (${data.files.length})</span>`;
+							}
+							if (data.locked) {
+								status.innerHTML += ' 🔒';
+							}
+							status.classList.remove('badge-secondary');
+						});
+			}
+		});
+	}
+
+	function publish() {
+		alert('not implemented');
+	}
+
+	function lockUpload() {
+		alert('not implemented');
+	}
+
+	reloadMatches();
+</script>
 </body>
 </html>
