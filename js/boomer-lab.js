@@ -4,6 +4,10 @@ document.getElementById('check-code-btn').onclick = () => {
             return response.json();
         })
         .then((myJson) => {
-            console.log(myJson);
+            if (!myJson.exists) {
+                alert('Unknown code. Maybe a typo?');
+            } else {
+                console.log(myJson);
+            }
         });
 };
