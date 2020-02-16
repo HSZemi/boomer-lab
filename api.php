@@ -154,7 +154,7 @@ if (isset($_GET['check'])) {
     }
 } else if (isset($_GET['matches'])) {
     $matches = json_decode(file_get_contents('admin/data/matches.json'), true);
-    $filtered = array_filter($matches, 'only_visible_matches', ARRAY_FILTER_USE_BOTH);
+    $filtered = array_values(array_filter($matches, 'only_visible_matches', ARRAY_FILTER_USE_BOTH));
     echo json_encode($filtered, JSON_PRETTY_PRINT);
 } else if (isset($_POST['code'])) {
     $code = $_POST['code'];
