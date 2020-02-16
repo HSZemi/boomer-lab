@@ -52,7 +52,7 @@ if (isset($data['creatematch'])) {
     $matches = json_decode(file_get_contents($filename), true);
     foreach ($matches as &$match) {
         if ($match['player1code'] === $player1code && $match['player2code'] === $player2code) {
-            $match['locked'] = true;
+            $match['locked'] = !$match['locked'];
         }
     }
     file_put_contents($filename, json_encode($matches, JSON_PRETTY_PRINT));
@@ -64,7 +64,7 @@ if (isset($data['creatematch'])) {
     $matches = json_decode(file_get_contents($filename), true);
     foreach ($matches as &$match) {
         if ($match['player1code'] === $player1code && $match['player2code'] === $player2code) {
-            $match['visible'] = true;
+            $match['visible'] = !$match['visible'];
         }
     }
     file_put_contents($filename, json_encode($matches, JSON_PRETTY_PRINT));

@@ -127,6 +127,8 @@
                     const locked = match.locked ? 'locked 🔒' : 'unlocked 🔓';
                     const player1files = match.player1recs.length > 0 ? `<a href="../data/${match.player1zip}">${match.player1recs.length} files ✔️</a>` : 'missing ❌';
                     const player2files = match.player2recs.length > 0 ? `<a href="../data/${match.player2zip}">${match.player2recs.length} files ✔</a>️` : 'missing ❌';
+                    const lockButtonLabel = match.locked ? 'Unlock' : 'Lock';
+                    const publishButtonLabel = match.visible ? 'Hide' : 'Publish';
                     matchListBody.innerHTML += `<tr>
 													<td>${match.round}</td>
 													<td>${match.number_of_games}</td>
@@ -139,8 +141,8 @@
 													<td>${locked}</td>
 													<td>${match.visible}</td>
 													<td>
-														<button class="btn btn-sm btn-secondary btn-lock">Lock</button>
-														<button class="btn btn-sm btn-primary btn-publish">Publish</button>
+														<button class="btn btn-sm btn-secondary btn-lock">${lockButtonLabel}</button>
+														<button class="btn btn-sm btn-primary btn-publish">${publishButtonLabel}</button>
 													</td>
 												</tr>`;
                 }
@@ -148,20 +150,20 @@
                     btn.onclick = (event) => {
                         const player1code = event.target.parentElement.parentElement.children[3].children[0].textContent;
                         const player2code = event.target.parentElement.parentElement.children[6].children[0].textContent;
-                        lockUpload(player1code, player2code);
+                        toggleLock(player1code, player2code);
                     };
                 }
                 for (let btn of document.getElementsByClassName('btn-publish')) {
                     btn.onclick = (event) => {
                         const player1code = event.target.parentElement.parentElement.children[3].children[0].textContent;
                         const player2code = event.target.parentElement.parentElement.children[6].children[0].textContent;
-                        publish(player1code, player2code);
+                        togglePublish(player1code, player2code);
                     };
                 }
             });
     }
 
-    function publish(player1code, player2code) {
+    function togglePublish(player1code, player2code) {
         fetch('api.php', {
             method: 'POST',
             headers: {
@@ -174,8 +176,8 @@
             });
     }
 
-    function lockUpload(player1code, player2code) {
-        fetch('api.php?lock', {
+    function toggleLock(player1code, player2code) {
+        fetch('api.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
