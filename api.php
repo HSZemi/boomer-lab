@@ -138,7 +138,7 @@ function createZipFile($filenames, $code, $round, $player, $opponent)
     $zipFileName = $round . '-' . $code . '-' . $player . '-vs-' . $opponent . '.zip';
     $zipFilePath = 'data/' . $zipFileName;
     $zipArchive = new ZipArchive();
-    $zipArchive->open($zipFilePath, ZipArchive::CREATE);
+    $zipArchive->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
     foreach ($filenames as $filename) {
         $zipArchive->addFile('admin/data/recs/' . $filename, $filename);
         $zipArchive->setCompressionName($filename, ZipArchive::CM_STORE);
