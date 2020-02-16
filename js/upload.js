@@ -121,6 +121,17 @@ function performUpload() {
     const filesInput = document.getElementById('files-input');
     removeEmptyGames();
 
+    let numberOfFiles = 0;
+    for (let game of GAMES) {
+        for (let file of game) {
+            numberOfFiles++;
+        }
+    }
+    if (numberOfFiles === 0) {
+        alert('Please add recorded game files first');
+        return;
+    }
+
     formData.append('code', document.getElementById('input-match-code').value);
     formData.append('config', JSON.stringify(GAMES));
     for (let i = 0; i < filesInput.files.length; i++) {
