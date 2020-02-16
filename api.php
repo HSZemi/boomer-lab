@@ -30,7 +30,7 @@ function validateConfig($config)
     }
 }
 
-function processUploadedFiles($config, $code, $round, $player, $opponent)
+function processUploadedFiles($config, $code, $round, $player, $opponent, $numberOfGames)
 {
     $filenames = array();
     for ($gameNumber = 0; $gameNumber < count($config); $gameNumber++) {
@@ -52,11 +52,35 @@ function processUploadedFiles($config, $code, $round, $player, $opponent)
         }
     }
 
+    $filenames = fillWithFakeGames($config, $code, $round, $player, $opponent, $numberOfGames, $filenames);
+
     $targetFilesize = 5 * 1024 * 1024;
     $paddedFilenames = padFilesizes($filenames, $targetFilesize);
     $zipFileName = createZipFile($paddedFilenames, $code, $round, $player, $opponent);
 
     return array('filenames' => $filenames, 'zipfilename' => $zipFileName);
+}
+
+function fillWithFakeGames($config, $code, $round, $player, $opponent, $numberOfGames, $filenames)
+{
+    for ($gameNumber = count($config); $gameNumber < $numberOfGames; $gameNumber++) {
+        $numberOfFiles = 1;
+        if (rand(0, 99) < 10) {
+            $numberOfFiles = 2;
+        }
+        for ($subGameNumber = 0; $subGameNumber < $numberOfFiles; $subGameNumber++) {
+            $target_filename = $round . '-'
+                . $code . '-'
+                . ($gameNumber + 1) . '.' . $subGameNumber . '-'
+                . $player . '-vs-' . $opponent
+                . '.aoe2record';
+            $target_filepath = 'admin/data/recs/' . $target_filename;
+            $source_filepath = 'admin/data/recs/' . $filenames[0];
+            copy($source_filepath, $target_filepath);
+            $filenames[] = $target_filename;
+        }
+    }
+    return $filenames;
 }
 
 function padFilesizes($filenames, $targetFilesize)
@@ -166,7 +190,7 @@ if (isset($_GET['check'])) {
         $opponent = $matches[$matchindex]['player1name'];
     }
 
-    $filenames = processUploadedFiles($config, $code, $matches[$matchindex]['round'], $player, $opponent);
+    $filenames = processUploadedFiles($config, $code, $matches[$matchindex]['round'], $player, $opponent, $matches[$matchindex]['number_of_games']);
 
     if ($code === $matches[$matchindex]['player1code']) {
         $matches[$matchindex]['player1recs'] = $filenames['filenames'];
