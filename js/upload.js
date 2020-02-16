@@ -69,6 +69,15 @@ function updateGameSorter() {
     }
 }
 
+function removeEmptyGames() {
+    for (let i = GAMES.length - 1; i >= 0; i--) {
+        if (GAMES[i].length === 0) {
+            GAMES.splice(i, 1);
+        }
+    }
+
+}
+
 function moveUp(filename) {
     for (let gameIndex = 0; gameIndex < GAMES.length; gameIndex++) {
         for (let subGameIndex = 0; subGameIndex < GAMES[gameIndex].length; subGameIndex++) {
@@ -85,6 +94,7 @@ function moveUp(filename) {
             }
         }
     }
+    removeEmptyGames();
 }
 
 function moveDown(filename) {
@@ -103,11 +113,13 @@ function moveDown(filename) {
             }
         }
     }
+    removeEmptyGames();
 }
 
 function performUpload() {
     const formData = new FormData();
     const filesInput = document.getElementById('files-input');
+    removeEmptyGames();
 
     formData.append('code', document.getElementById('input-match-code').value);
     formData.append('config', JSON.stringify(GAMES));
