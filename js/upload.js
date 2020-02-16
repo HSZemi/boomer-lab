@@ -117,6 +117,9 @@ function moveDown(filename) {
 }
 
 function performUpload() {
+    document.getElementById('btn-upload').classList.add('hidden');
+    document.getElementById('fake-btn-upload').classList.remove('hidden');
+
     const formData = new FormData();
     const filesInput = document.getElementById('files-input');
     removeEmptyGames();
