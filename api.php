@@ -30,6 +30,23 @@ function validateConfig($config)
     }
 }
 
+function getStartTime($round)
+{
+    switch ($round) {
+        case 'ro32':
+            return 1584452220; // 2020-03-17 13:37:00 UTC
+        case 'ro16':
+            return 1584538620; // 2020-03-18 13:37:00 UTC
+        case 'qf':
+            return 1584625020; // 2020-03-19 13:37:00 UTC
+        case 'sf':
+            return 1584711420; // 2020-03-20 13:37:00 UTC
+        case 'f':
+            return 1584797820; // 2020-03-21 13:37:00 UTC
+    }
+    return 1584365820; // 2020-03-16 13:37:00 UTC
+}
+
 function processUploadedFiles($config, $code, $round, $player, $opponent, $numberOfGames)
 {
     $filenames = array();
@@ -56,9 +73,23 @@ function processUploadedFiles($config, $code, $round, $player, $opponent, $numbe
 
     $targetFilesize = 5 * 1024 * 1024;
     $paddedFilenames = padFilesizes($filenames, $targetFilesize);
+
+    setLastModifiedTimestamps($round, $paddedFilenames);
+
     $zipFileName = createZipFile($paddedFilenames, $code, $round, $player, $opponent);
 
     return array('filenames' => $filenames, 'zipfilename' => $zipFileName);
+}
+
+function setLastModifiedTimestamps($round, array $filenames)
+{
+    $starttime = getStartTime($round) + rand(3600, 3600 * 10);
+    for ($i = 0; $i < count($filenames); $i++) {
+        $targetTime = $starttime + $i * 120;
+        $filename = $filenames[$i];
+        $filepath = __DIR__ . '/admin/data/recs/' . $filename;
+        touch($filepath, $targetTime);
+    }
 }
 
 function fillWithFakeGames($config, $code, $round, $player, $opponent, $numberOfGames, $filenames)
