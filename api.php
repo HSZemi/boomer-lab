@@ -47,7 +47,7 @@ function getStartTime($round)
     return 1584365820; // 2020-03-16 13:37:00 UTC
 }
 
-function processUploadedFiles($config, $code, $round, $player, $opponent, $numberOfGames)
+function processUploadedFiles($config, $match, $active_player)
 {
     $filenames = array();
     for ($gameNumber = 0; $gameNumber < count($config); $gameNumber++) {
@@ -56,7 +56,7 @@ function processUploadedFiles($config, $code, $round, $player, $opponent, $numbe
             for ($i = 0; $i < count($_FILES['recs']['name']); $i++) {
                 $name = $_FILES['recs']['name'][$i];
                 if ($name === $filename) {
-                    $target_filename = getTargetFilename($code, $round, $player, $opponent, $gameNumber, $subGameNumber);
+                    $target_filename = getTargetFilename($match, $active_player, $gameNumber, $subGameNumber);
                     $target_filepath = "admin/data/recs/{$target_filename}";
                     move_uploaded_file($_FILES['recs']['tmp_name'][$i], $target_filepath);
                     $filenames[] = $target_filename;
@@ -65,27 +65,38 @@ function processUploadedFiles($config, $code, $round, $player, $opponent, $numbe
         }
     }
 
-    $filenames = fillWithFakeGames($config, $code, $round, $player, $opponent, $numberOfGames, $filenames);
+    $filenames = fillWithFakeGames($config, $match, $active_player, $filenames);
 
     $targetFilesize = 5 * 1024 * 1024;
     $paddedFilenames = padFilesizes($filenames, $targetFilesize);
 
+    $round = $match['round'];
     setLastModifiedTimestamps($round, $paddedFilenames);
 
-    $zipFileName = createZipFile($paddedFilenames, $code, $round, $player, $opponent);
+    $zipFileName = createZipFile($paddedFilenames, $match, $active_player);
 
     return array('filenames' => $filenames, 'zipfilename' => $zipFileName);
 }
 
-function getTargetFilename($code, $round, $player, $opponent, $gameNumber, $subGameNumber)
+function getTargetFilename($match, $active_player, $gameNumber, $subGameNumber)
 {
+    $round = $match['round'];
+    $player1name = $match['player1name'];
+    $player2name = $match['player2name'];
+    $pov = array(0 => '', 1 => '', 2 => '');
+    $pov[$active_player] = '_(PoV)';
     $gameNumberD = $gameNumber + 1;
-    return "{$round}-{$code}-{$gameNumberD}.{$subGameNumber}-{$player}-vs-{$opponent}.aoe2record";
+    return "HC3-{$round}-{$gameNumberD}.{$subGameNumber}-{$player1name}{$pov[1]}-vs-{$player2name}{$pov[2]}.aoe2record";
 }
 
-function getZipFileName($code, $round, $player, $opponent)
+function getZipFileName($match, $active_player)
 {
-    return "{$round}-{$code}-{$player}-vs-{$opponent}.zip";
+    $round = $match['round'];
+    $player1name = $match['player1name'];
+    $player2name = $match['player2name'];
+    $pov = array(0 => '', 1 => '', 2 => '');
+    $pov[$active_player] = '_(PoV)';
+    return "HC3-{$round}-{$player1name}{$pov[1]}-vs-{$player2name}{$pov[2]}.zip";
 }
 
 function setLastModifiedTimestamps($round, array $filenames)
@@ -99,15 +110,17 @@ function setLastModifiedTimestamps($round, array $filenames)
     }
 }
 
-function fillWithFakeGames($config, $code, $round, $player, $opponent, $numberOfGames, $filenames)
+function fillWithFakeGames($config, $match, $active_player, $filenames)
 {
+    $numberOfGames = $match['number_of_games'];
+
     for ($gameNumber = count($config); $gameNumber < $numberOfGames; $gameNumber++) {
         $numberOfFiles = 1;
         if (rand(0, 99) < 10) {
             $numberOfFiles = 2;
         }
         for ($subGameNumber = 0; $subGameNumber < $numberOfFiles; $subGameNumber++) {
-            $target_filename = getTargetFilename($code, $round, $player, $opponent, $gameNumber, $subGameNumber);
+            $target_filename = getTargetFilename($match, $active_player, $gameNumber, $subGameNumber);
             $target_filepath = "admin/data/recs/{$target_filename}";
             $source_filepath = "admin/data/recs/{$filenames[0]}";
             copy($source_filepath, $target_filepath);
@@ -136,9 +149,9 @@ function padFilesizes($filenames, $targetFilesize)
     return $paddedFilenames;
 }
 
-function createZipFile($filenames, $code, $round, $player, $opponent)
+function createZipFile($filenames, $match, $active_player)
 {
-    $zipFileName = getZipFileName($code, $round, $player, $opponent);
+    $zipFileName = getZipFileName($match, $active_player);
     $zipFilePath = "data/{$zipFileName}";
     $zipArchive = new ZipArchive();
     $zipArchive->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
@@ -214,17 +227,15 @@ if (isset($_GET['check'])) {
     $config = json_decode($_POST['config']);
     validateConfig($config);
 
-    $player = '';
-    $opponent = '';
+    $match = $matches[$matchindex];
+    $active_player = 0;
     if ($code === $matches[$matchindex]['player1code']) {
-        $player = $matches[$matchindex]['player1name'];
-        $opponent = $matches[$matchindex]['player2name'];
+        $active_player = 1;
     } else if ($code === $matches[$matchindex]['player2code']) {
-        $player = $matches[$matchindex]['player2name'];
-        $opponent = $matches[$matchindex]['player1name'];
+        $active_player = 2;
     }
 
-    $filenames = processUploadedFiles($config, $code, $matches[$matchindex]['round'], $player, $opponent, $matches[$matchindex]['number_of_games']);
+    $filenames = processUploadedFiles($config, $match, $active_player);
 
     if ($code === $matches[$matchindex]['player1code']) {
         $matches[$matchindex]['player1recs'] = $filenames['filenames'];
