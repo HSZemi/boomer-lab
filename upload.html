@@ -44,11 +44,36 @@
 				<p>Please upload the recorded games of your <span id="round-name">…</span>
 					match against <span id="opponent-name">…</span>.</p>
 
+				<dl>
+					<dt>Step 1</dt>
+					<dd>Click the selection button below and select <b>all</b> recorded game files
+						(<code>*.aoe2record</code>) of this match. This may also include multiple files for
+						a game that dropped and got restored.<br>
+						If you notice that you missed a file, press the button again and select all files.
+					</dd>
+					<dt class="step-2 hidden">Step 2</dt>
+					<dd class="step-2 hidden">Look below. Your selected files got sorted into a list of games
+						automatically.<br>
+						Use the arrow buttons ↑↓ next to the file names to move the files around until each file is
+						<ul>
+							<li>below the correct game</li>
+							<li>in the correct order.</li>
+						</ul>
+						If you notice that you selected an incorrect file, you can remove it with the red ❌ button.
+					</dd>
+					<dt class="step-3 hidden">Step 3</dt>
+					<dd class="step-3 hidden">Click the blue "Upload" button to upload the files! A green success alert
+						tells you that it
+						worked.<br>
+						If you get stuck with a loading animation for an unusual amount of time, contact an admin.
+					</dd>
+				</dl>
+
 				<input id="files-input" type="file" multiple/>
 
 				<ul id="game-sorter"></ul>
 
-				<button id="btn-upload" class="btn btn-primary" onclick="performUpload()">Upload</button>
+				<button id="btn-upload" class="btn btn-primary hidden" onclick="performUpload()">Upload</button>
 				<button id="fake-btn-upload" class="btn btn-primary hidden" disabled>
 					Uploading
 					<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>

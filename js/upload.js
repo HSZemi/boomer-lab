@@ -22,7 +22,19 @@ document.getElementById('check-code-btn').onclick = () => {
         });
 };
 
+function showFurtherSteps() {
+    for (let element of document.getElementsByClassName('step-2')) {
+        element.classList.remove('hidden');
+    }
+    for (let element of document.getElementsByClassName('step-3')) {
+        element.classList.remove('hidden');
+    }
+    document.getElementById('btn-upload').classList.remove('hidden');
+}
+
 document.getElementById('files-input').onchange = (event) => {
+    showFurtherSteps();
+
     const files = event.target.files;
     GAMES.length = 0;
     let index = 0;
