@@ -160,6 +160,12 @@ function createZipFile($filenames, $match, $active_player)
         $zipArchive->setCompressionName($filename, ZipArchive::CM_STORE);
     }
     $zipArchive->close();
+
+    $round = $match['round'];
+    $targetTime = getStartTime($round);
+    $filepath = __DIR__ . "/{$zipFilePath}";
+    touch($filepath, $targetTime);
+
     return $zipFileName;
 }
 
