@@ -48,6 +48,7 @@ function updateGameSorter() {
                             <span class="badge badge-secondary">${GAMES[i][j]}</span>
                             <button class="btn btn-outline-secondary btn-sm btn-up">↑</button>
                             <button class="btn btn-outline-secondary btn-sm btn-down">↓</button>
+                            <button class="btn btn-outline-danger btn-sm btn-remove">❌</button>
                          </li>`;
         }
         gameHtml += '</ul>';
@@ -67,6 +68,14 @@ function updateGameSorter() {
             updateGameSorter();
         }
     }
+    for (let btn of document.querySelectorAll('.btn-remove')) {
+        btn.onclick = (event) => {
+            const filename = event.target.parentElement.firstElementChild.textContent;
+            removeFilename(filename);
+            removeEmptyGames();
+            updateGameSorter();
+        }
+    }
 }
 
 function removeEmptyGames() {
@@ -75,7 +84,17 @@ function removeEmptyGames() {
             GAMES.splice(i, 1);
         }
     }
+}
 
+function removeFilename(filename) {
+    for (let gameIndex = 0; gameIndex < GAMES.length; gameIndex++) {
+        for (let subGameIndex = 0; subGameIndex < GAMES[gameIndex].length; subGameIndex++) {
+            if (GAMES[gameIndex][subGameIndex] === filename) {
+                GAMES[gameIndex].splice(subGameIndex);
+                return;
+            }
+        }
+    }
 }
 
 function moveUp(filename) {
