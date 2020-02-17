@@ -136,9 +136,6 @@ function moveDown(filename) {
 }
 
 function performUpload() {
-    document.getElementById('btn-upload').classList.add('hidden');
-    document.getElementById('fake-btn-upload').classList.remove('hidden');
-
     const formData = new FormData();
     const filesInput = document.getElementById('files-input');
     removeEmptyGames();
@@ -153,6 +150,9 @@ function performUpload() {
         alert('Please add recorded game files first');
         return;
     }
+
+    document.getElementById('btn-upload').classList.add('hidden');
+    document.getElementById('fake-btn-upload').classList.remove('hidden');
 
     formData.append('code', document.getElementById('input-match-code').value);
     formData.append('config', JSON.stringify(GAMES));
