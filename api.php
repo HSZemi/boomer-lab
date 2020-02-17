@@ -56,12 +56,8 @@ function processUploadedFiles($config, $code, $round, $player, $opponent, $numbe
             for ($i = 0; $i < count($_FILES['recs']['name']); $i++) {
                 $name = $_FILES['recs']['name'][$i];
                 if ($name === $filename) {
-                    $target_filename = $round . '-'
-                        . $code . '-'
-                        . ($gameNumber + 1) . '.' . $subGameNumber . '-'
-                        . $player . '-vs-' . $opponent
-                        . '.aoe2record';
-                    $target_filepath = 'admin/data/recs/' . $target_filename;
+                    $target_filename = getTargetFilename($code, $round, $player, $opponent, $gameNumber, $subGameNumber);
+                    $target_filepath = "admin/data/recs/{$target_filename}";
                     move_uploaded_file($_FILES['recs']['tmp_name'][$i], $target_filepath);
                     $filenames[] = $target_filename;
                 }
@@ -81,13 +77,24 @@ function processUploadedFiles($config, $code, $round, $player, $opponent, $numbe
     return array('filenames' => $filenames, 'zipfilename' => $zipFileName);
 }
 
+function getTargetFilename($code, $round, $player, $opponent, $gameNumber, $subGameNumber)
+{
+    $gameNumberD = $gameNumber + 1;
+    return "{$round}-{$code}-{$gameNumberD}.{$subGameNumber}-{$player}-vs-{$opponent}.aoe2record";
+}
+
+function getZipFileName($code, $round, $player, $opponent)
+{
+    return "{$round}-{$code}-{$player}-vs-{$opponent}.zip";
+}
+
 function setLastModifiedTimestamps($round, array $filenames)
 {
     $starttime = getStartTime($round) + rand(3600, 3600 * 10);
     for ($i = 0; $i < count($filenames); $i++) {
         $targetTime = $starttime + $i * 120;
         $filename = $filenames[$i];
-        $filepath = __DIR__ . '/admin/data/recs/' . $filename;
+        $filepath = __DIR__ . "/admin/data/recs/{$filename}";
         touch($filepath, $targetTime);
     }
 }
@@ -100,13 +107,9 @@ function fillWithFakeGames($config, $code, $round, $player, $opponent, $numberOf
             $numberOfFiles = 2;
         }
         for ($subGameNumber = 0; $subGameNumber < $numberOfFiles; $subGameNumber++) {
-            $target_filename = $round . '-'
-                . $code . '-'
-                . ($gameNumber + 1) . '.' . $subGameNumber . '-'
-                . $player . '-vs-' . $opponent
-                . '.aoe2record';
-            $target_filepath = 'admin/data/recs/' . $target_filename;
-            $source_filepath = 'admin/data/recs/' . $filenames[0];
+            $target_filename = getTargetFilename($code, $round, $player, $opponent, $gameNumber, $subGameNumber);
+            $target_filepath = "admin/data/recs/{$target_filename}";
+            $source_filepath = "admin/data/recs/{$filenames[0]}";
             copy($source_filepath, $target_filepath);
             $filenames[] = $target_filename;
         }
@@ -118,9 +121,9 @@ function padFilesizes($filenames, $targetFilesize)
 {
     $paddedFilenames = array();
     foreach ($filenames as $filename) {
-        $filepath = 'admin/data/recs/' . $filename;
+        $filepath = "admin/data/recs/{$filename}";
         $copyFilename = str_replace('.aoe2record', '.se.aoe2record', $filename);
-        $copyFilepath = 'admin/data/recs/' . $copyFilename;
+        $copyFilepath = "admin/data/recs/{$copyFilename}";
         copy($filepath, $copyFilepath);
         $currentSize = filesize($copyFilepath);
         $diff = $targetFilesize - $currentSize;
@@ -135,12 +138,12 @@ function padFilesizes($filenames, $targetFilesize)
 
 function createZipFile($filenames, $code, $round, $player, $opponent)
 {
-    $zipFileName = $round . '-' . $code . '-' . $player . '-vs-' . $opponent . '.zip';
-    $zipFilePath = 'data/' . $zipFileName;
+    $zipFileName = getZipFileName($code, $round, $player, $opponent);
+    $zipFilePath = "data/{$zipFileName}";
     $zipArchive = new ZipArchive();
     $zipArchive->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
     foreach ($filenames as $filename) {
-        $zipArchive->addFile('admin/data/recs/' . $filename, $filename);
+        $zipArchive->addFile("admin/data/recs/{$filename}", $filename);
         $zipArchive->setCompressionName($filename, ZipArchive::CM_STORE);
     }
     $zipArchive->close();
