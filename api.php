@@ -103,7 +103,7 @@ function setLastModifiedTimestamps($round, array $filenames)
 {
     $starttime = getStartTime($round) + rand(3600, 3600 * 10);
     for ($i = 0; $i < count($filenames); $i++) {
-        $targetTime = $starttime + $i * 120;
+        $targetTime = $starttime - $i * 120;
         $filename = $filenames[$i];
         $filepath = __DIR__ . "/admin/data/recs/{$filename}";
         touch($filepath, $targetTime);
