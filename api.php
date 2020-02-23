@@ -157,7 +157,7 @@ function createZipFile($filenames, $match, $active_player)
     $zipArchive->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
     foreach ($filenames as $filename) {
         $zipArchive->addFile("admin/data/recs/{$filename}", $filename);
-        $zipArchive->setCompressionName($filename, ZipArchive::CM_STORE);
+        $zipArchive->setCompressionName($filename, ZipArchive::CM_DEFLATE);
     }
     $zipArchive->close();
 
