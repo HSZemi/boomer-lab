@@ -1,5 +1,6 @@
 <?php
 
+const FIVE_MB = 5 * 1024 * 1024;
 function only_visible_matches($value, $key)
 {
     if ($value['visible']) {
@@ -67,7 +68,7 @@ function processUploadedFiles($config, $match, $active_player)
 
     $filenames = fillWithFakeGames($config, $match, $active_player, $filenames);
 
-    $targetFilesize = 5 * 1024 * 1024;
+    $targetFilesize = getTargetFilesize($filenames);
     $paddedFilenames = padFilesizes($filenames, $targetFilesize);
 
     $round = $match['round'];
@@ -76,6 +77,20 @@ function processUploadedFiles($config, $match, $active_player)
     $zipFileName = createZipFile($paddedFilenames, $match, $active_player);
 
     return array('filenames' => $filenames, 'zipfilename' => $zipFileName);
+}
+
+function getTargetFilesize($filenames)
+{
+    $maxFileSize = 0;
+    foreach ($filenames as $filename) {
+        $filepath = "admin/data/recs/{$filename}";
+        $maxFileSize = max($maxFileSize, filesize($filepath));
+    }
+    $targetFilesize = FIVE_MB;
+    while ($maxFileSize > $targetFilesize) {
+        $targetFilesize += FIVE_MB;
+    }
+    return $targetFilesize;
 }
 
 function getTargetFilename($match, $active_player, $gameNumber, $subGameNumber)
